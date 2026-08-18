@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Book {
+  id               String        @id @default(cuid())
+  title            String
+  author           String
+  description      String?
+  subjects         String[]
+  coverUrl         String?
+  sourceConfidence String        @default("metadata-only")
+  concepts         BookConcept[]
+  createdAt        DateTime      @default(now())
+}
+
+model Concept {
+  id    String        @id @default(cuid())
+  label String        @unique
+  books BookConcept[]
+}
+
+model BookConcept {
+  id         String  @id @default(cuid())
+  bookId     String
+  conceptId  String
+  prominence Int
+  rationale  String
+  book       Book    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  concept    Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, conceptId])
+}
