@@ -1,6 +1,7 @@
 // app/api/books/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveBookMetadata } from "@/lib/metadata";
 
 export async function GET() {
   const books = await prisma.book.findMany({ orderBy: { createdAt: "desc" } });
@@ -17,8 +18,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const metadata = await resolveBookMetadata(title, author);
+
   const book = await prisma.book.create({
-    data: { title, author, description: description || null },
+    data: {
+      title,
+      author,
+      description: description || metadata.description,
+      subjects: metadata.subjects,
+      coverUrl: metadata.coverUrl,
+    },
   });
 
   return NextResponse.json(book, { status: 201 });
