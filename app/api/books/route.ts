@@ -9,8 +9,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { title, author, description } = await req.json();
-
+  const { title, author, description, workKey } = await req.json();
   if (!title || !author) {
     return NextResponse.json(
       { error: "Title and author are required" },
@@ -18,7 +17,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const metadata = await resolveBookMetadata(title, author);
+  const metadata = await resolveBookMetadata(title, author, workKey);
 
   const book = await prisma.book.create({
     data: {

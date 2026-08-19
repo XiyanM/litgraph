@@ -7,7 +7,8 @@ type BookMetadata = {
 
 export async function resolveBookMetadata(
   title: string,
-  author: string
+  author: string,
+  workKey?: string | null // Google Books volume ID, when picked from typeahead
 ): Promise<BookMetadata> {
   const empty: BookMetadata = {
     description: null,
@@ -16,36 +17,38 @@ export async function resolveBookMetadata(
   };
 
   try {
-    const searchUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(
-      title
-    )}&author=${encodeURIComponent(author)}&fields=key,cover_i,subject&limit=1`;
-    const searchRes = await fetch(searchUrl);
-    if (!searchRes.ok) return empty;
+    let item: any = null;
 
-    const searchData = await searchRes.json();
-    const doc = searchData.docs?.[0];
-    if (!doc) return empty;
-
-    const coverUrl = doc.cover_i
-      ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
-      : null;
-
-    const subjects: string[] = doc.subject?.slice(0, 8) ?? [];
-
-    let description: string | null = null;
-    const workKey = doc.key; // e.g. "/works/OL45804W"
     if (workKey) {
-      const workRes = await fetch(`https://openlibrary.org${workKey}.json`);
-      if (workRes.ok) {
-        const workData = await workRes.json();
-        description =
-          typeof workData.description === "string"
-            ? workData.description
-            : workData.description?.value ?? null;
+      // Exact volume the user picked — fetch it directly, no guessing involved.
+      const res = await fetch(
+        `https://www.googleapis.com/books/v1/volumes/${workKey}?key=${process.env.GOOGLE_BOOKS_API_KEY}`
+      );
+      if (res.ok) item = await res.json();
+    } else {
+      // Fallback for manual submits with no typeahead pick — best-effort search.
+      const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(
+        title
+      )}+inauthor:${encodeURIComponent(author)}&maxResults=1&key=${
+        process.env.GOOGLE_BOOKS_API_KEY
+      }`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        item = data.items?.[0] ?? null;
       }
     }
 
-    return { description, subjects, coverUrl };
+    if (!item?.volumeInfo) return empty;
+
+    const info = item.volumeInfo;
+    const thumb = info.imageLinks?.thumbnail;
+
+    return {
+      description: info.description ?? null,
+      subjects: info.categories ?? [],
+      coverUrl: thumb ? thumb.replace("http://", "https://") : null, // Google serves http by default
+    };
   } catch {
     return empty;
   }
