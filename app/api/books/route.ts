@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveBookMetadata } from "@/lib/metadata";
+import { resolveWikipediaEnrichment } from "@/lib/wikipedia";
 
 export async function GET() {
   const books = await prisma.book.findMany({ orderBy: { createdAt: "desc" } });
@@ -18,6 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   const metadata = await resolveBookMetadata(title, author, workKey);
+  const wiki = await resolveWikipediaEnrichment(title, author);
 
   const book = await prisma.book.create({
     data: {
@@ -26,6 +28,8 @@ export async function POST(req: NextRequest) {
       description: description || metadata.description,
       subjects: metadata.subjects,
       coverUrl: metadata.coverUrl,
+      wikipediaExcerpt: wiki?.excerpt ?? null,
+      sourceConfidence: wiki ? "wikipedia" : "metadata-only",
     },
   });
 

@@ -13,6 +13,7 @@ model Book {
   description      String?
   subjects         String[]
   coverUrl         String?
+  wikipediaExcerpt String?       // NEW — LLM grounding only, never rendered verbatim
   sourceConfidence String        @default("metadata-only")
   concepts         BookConcept[]
   createdAt        DateTime      @default(now())
