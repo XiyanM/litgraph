@@ -29,9 +29,9 @@ export async function resolveBookMetadata(
       // Fallback for manual submits with no typeahead pick — best-effort search.
       const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(
         title
-      )}+inauthor:${encodeURIComponent(author)}&maxResults=1&key=${
-        process.env.GOOGLE_BOOKS_API_KEY
-      }`;
+      )}+inauthor:${encodeURIComponent(
+        author
+      )}&langRestrict=en&maxResults=1&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
