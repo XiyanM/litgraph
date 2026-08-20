@@ -102,6 +102,11 @@ function cleanWikitext(wikitext: string): string {
     .trim();
 }
 
+function isPlausibleMatch(pageTitle: string, bookTitle: string): boolean {
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return normalize(pageTitle).includes(normalize(bookTitle).slice(0, 10));
+}
+
 export async function resolveWikipediaEnrichment(
   title: string,
   author: string
@@ -109,6 +114,12 @@ export async function resolveWikipediaEnrichment(
   try {
     const pageTitle = await findPageTitle(title, author);
     if (!pageTitle) return null;
+    if (!isPlausibleMatch(pageTitle, title)) {
+      console.warn(
+        `Wikipedia match rejected: "${pageTitle}" doesn't look like "${title}"`
+      );
+      return null;
+    }
 
     const sections = await getSections(pageTitle);
     const matched = findThemeOrPlotSection(sections);
