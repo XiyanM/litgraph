@@ -12,16 +12,18 @@ interface Suggestion {
 export function AddBookPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-    const [adding, setAdding] = useState<string | null>(null);
+    const [adding, setAdding] = useState(false);
 
     useEffect(() => {
         if (!open) {
             setQuery("");
             setSuggestions([]);
+            setAdding(false);
         }
     }, [open]);
 
     useEffect(() => {
+        if (adding) return;
         if (query.trim().length < 2) {
             setSuggestions([]);
             return;
@@ -31,10 +33,11 @@ export function AddBookPanel({ open, onClose }: { open: boolean; onClose: () => 
             setSuggestions(await res.json());
         }, 300);
         return () => clearTimeout(timeout);
-    }, [query]);
+    }, [query, adding]);
 
     async function handleAdd(s: Suggestion) {
-        setAdding(s.workKey);
+        if (adding) return;
+        setAdding(true);
         await fetch("/api/books", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -75,7 +78,8 @@ export function AddBookPanel({ open, onClose }: { open: boolean; onClose: () => 
                     autoFocus
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search Google Books..."
+                    placeholder={adding ? "Adding..." : "Search Google Books..."}
+                    disabled={adding}
                     style={{
                         width: "100%",
                         padding: "16px 20px",
@@ -88,7 +92,14 @@ export function AddBookPanel({ open, onClose }: { open: boolean; onClose: () => 
                     }}
                 />
                 {suggestions.length > 0 && (
-                    <div style={{ maxHeight: 360, overflowY: "auto" }}>
+                    <div
+                        style={{
+                            maxHeight: 360,
+                            overflowY: "auto",
+                            pointerEvents: adding ? "none" : "auto",
+                            opacity: adding ? 0.5 : 1,
+                        }}
+                    >
                         {suggestions.map((s) => (
                             <div
                                 key={s.workKey}
@@ -99,7 +110,6 @@ export function AddBookPanel({ open, onClose }: { open: boolean; onClose: () => 
                                     gap: 12,
                                     padding: "10px 20px",
                                     cursor: "pointer",
-                                    opacity: adding === s.workKey ? 0.5 : 1,
                                 }}
                                 onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-bg)")}
                                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
