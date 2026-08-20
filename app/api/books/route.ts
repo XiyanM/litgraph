@@ -1,15 +1,17 @@
-// app/api/books/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { resolveBookMetadata } from "@/lib/metadata";
 import { resolveWikipediaEnrichment } from "@/lib/wikipedia";
 import { extractConcepts } from "@/lib/concepts";
 import { resolveConcept } from "@/lib/normalizeConcept";
+import { getLibraryId } from "@/lib/libraryId";
 
 export const maxDuration = 60;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const libraryId = getLibraryId(req);
   const books = await prisma.book.findMany({
+    where: { libraryId: libraryId ?? "__none__" },
     orderBy: { createdAt: "desc" },
     include: { concepts: { include: { concept: true } } },
   });
@@ -17,6 +19,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const libraryId = getLibraryId(req);
+  if (!libraryId) {
+    return NextResponse.json(
+      { error: "Missing library session." },
+      { status: 400 }
+    );
+  }
+
   const { title, author, description, workKey } = await req.json();
   if (!title || !author) {
     return NextResponse.json(
@@ -30,6 +40,7 @@ export async function POST(req: NextRequest) {
 
   const existing = await prisma.book.findFirst({
     where: {
+      libraryId,
       title: { equals: normalizedTitle, mode: "insensitive" },
       author: { equals: normalizedAuthor, mode: "insensitive" },
     },
@@ -44,8 +55,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // These two don't depend on each other — running them together instead
-  // of one-after-another cuts real wall-clock time off every request.
   const [metadata, wiki] = await Promise.all([
     resolveBookMetadata(normalizedTitle, normalizedAuthor, workKey),
     resolveWikipediaEnrichment(normalizedTitle, normalizedAuthor),
@@ -53,6 +62,7 @@ export async function POST(req: NextRequest) {
 
   const book = await prisma.book.create({
     data: {
+      libraryId,
       title: normalizedTitle,
       author: normalizedAuthor,
       description: description || metadata.description,
@@ -63,8 +73,6 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Book is already saved at this point — if extraction fails, we keep the
-  // book with zero concepts rather than losing it entirely.
   const extracted = await extractConcepts({
     title: book.title,
     author: book.author,
