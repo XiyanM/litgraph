@@ -114,7 +114,7 @@ export function BookGraph() {
     return (
         <div ref={containerRef} style={{ position: "relative", width: "100%", height: "100%" }}>
             {!loading && data.nodes.length === 0 && (
-                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", pointerEvents: "none" }}>
+                <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", pointerEvents: "none" }}>
                     <p style={{ fontFamily: "var(--font-serif)", fontSize: 20, color: "var(--color-text)", margin: 0 }}>
                         Nothing here yet.
                     </p>
