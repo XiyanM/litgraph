@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { CsvImportPanel } from '@/components/CsvImportPanel'
 
 type Book = { id: string; title: string; author: string; description: string | null }
 
@@ -89,6 +90,7 @@ export default function Home() {
         <textarea placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} />
         <button type="submit" disabled={loading}>{loading ? 'Adding...' : 'Add Book'}</button>
       </form>
+      <CsvImportPanel onImported={fetchBooks} />
       <ul style={{ marginTop: 24 }}>
         {books.map((b) => <li key={b.id}><strong>{b.title}</strong> by {b.author}</li>)}
       </ul>
