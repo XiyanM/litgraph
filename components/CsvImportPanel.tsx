@@ -41,7 +41,7 @@ export function CsvImportPanel({ onImported }: { onImported?: () => void }) {
     }
 
     return (
-        <div className="rounded-lg border border-neutral-700 p-4">
+        <div style={{ border: "1px solid var(--color-border)", borderRadius: 8, padding: 16, textAlign: "left" }}>
             <label className="block text-sm font-medium mb-2">
                 Import from Goodreads
             </label>
@@ -68,7 +68,7 @@ export function CsvImportPanel({ onImported }: { onImported?: () => void }) {
                 </p>
             )}
             {failed.length > 0 && (
-                <p className="text-xs text-red-400 mt-1">Failed: {failed.join(", ")}</p>
+                <p style={{ fontSize: 12, color: "#b3261e", marginTop: 4 }}>Failed: {failed.join(", ")}</p>
             )}
         </div>
     );
