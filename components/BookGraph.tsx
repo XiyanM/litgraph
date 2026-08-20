@@ -131,11 +131,10 @@ export function BookGraph() {
                 backgroundColor="#F8F8F6"
                 d3VelocityDecay={0.3}
                 d3AlphaDecay={0.02}
-                onEngineStop={() => fgRef.current?.zoomToFit(600, 80)}
                 nodeCanvasObject={(node: any, ctx, globalScale) => {
                     const isHovered = node.id === hoveredNodeId;
                     const isDimmed = hoveredNodeId && node.id !== hoveredNodeId && !neighborIds.has(node.id);
-                    const radius = node.type === "book" ? 5 : 2.5 + Math.min(node.degree, 6) * 0.6;
+                    const radius = node.type === "book" ? 6 : 3 + Math.min(node.degree, 6) * 0.7;
 
                     ctx.globalAlpha = isDimmed ? 0.2 : 1;
                     ctx.beginPath();
@@ -145,8 +144,9 @@ export function BookGraph() {
                     ctx.shadowBlur = isHovered ? 10 : 0;
                     ctx.fill();
 
-                    if (globalScale > 2.2 || isHovered) {
-                        ctx.font = node.type === "book" ? `${13 / globalScale}px Lora, serif` : `${11 / globalScale}px Inter, sans-serif`;
+                    const showLabel = node.type === "book" || globalScale > 2.2 || isHovered;
+                    if (showLabel) {
+                        ctx.font = node.type === "book" ? `${15 / globalScale}px Lora, serif` : `${13 / globalScale}px Inter, sans-serif`;
                         ctx.fillStyle = node.type === "book" ? "#181818" : "#6B6B68";
                         ctx.globalAlpha = isDimmed ? 0.2 : 1;
                         ctx.fillText(node.name, node.x + radius + 4, node.y + 3);
@@ -163,6 +163,23 @@ export function BookGraph() {
                 onNodeClick={handleNodeClick}
                 onNodeDragEnd={(node: any) => { node.fx = undefined; node.fy = undefined; }}
             />
+            <button
+                onClick={() => fgRef.current?.zoomToFit(400, 80)}
+                style={{
+                    position: "absolute",
+                    bottom: 24,
+                    left: 24,
+                    fontSize: 13,
+                    padding: "6px 14px",
+                    borderRadius: 6,
+                    border: "1px solid var(--color-border)",
+                    background: "var(--color-surface)",
+                    color: "var(--color-text-muted)",
+                    cursor: "pointer",
+                }}
+            >
+                Fit to view
+            </button>
 
             {panel && (
                 <div style={{ position: "absolute", top: 24, right: 24, width: 280, background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 10, padding: 20, boxShadow: "0 12px 40px rgba(0,0,0,0.1)" }}>
