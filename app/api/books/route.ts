@@ -44,16 +44,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const metadata = await resolveBookMetadata(
-    normalizedTitle,
-    normalizedAuthor,
-    workKey
-  );
-
-  const wiki = await resolveWikipediaEnrichment(
-    normalizedTitle,
-    normalizedAuthor
-  );
+  // These two don't depend on each other — running them together instead
+  // of one-after-another cuts real wall-clock time off every request.
+  const [metadata, wiki] = await Promise.all([
+    resolveBookMetadata(normalizedTitle, normalizedAuthor, workKey),
+    resolveWikipediaEnrichment(normalizedTitle, normalizedAuthor),
+  ]);
 
   const book = await prisma.book.create({
     data: {
