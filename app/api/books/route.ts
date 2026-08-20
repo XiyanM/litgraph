@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { resolveBookMetadata } from "@/lib/metadata";
 import { resolveWikipediaEnrichment } from "@/lib/wikipedia";
 import { extractConcepts } from "@/lib/concepts";
+import { resolveConcept } from "@/lib/normalizeConcept";
 
 export const maxDuration = 60;
 
@@ -78,11 +79,7 @@ export async function POST(req: NextRequest) {
 
   if (extracted) {
     for (const c of extracted) {
-      const concept = await prisma.concept.upsert({
-        where: { label: c.label },
-        create: { label: c.label },
-        update: {},
-      });
+      const concept = await resolveConcept(c.label);
       await prisma.bookConcept.create({
         data: {
           bookId: book.id,
