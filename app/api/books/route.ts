@@ -5,6 +5,8 @@ import { resolveBookMetadata } from "@/lib/metadata";
 import { resolveWikipediaEnrichment } from "@/lib/wikipedia";
 import { extractConcepts } from "@/lib/concepts";
 
+export const maxDuration = 60;
+
 export async function GET() {
   const books = await prisma.book.findMany({
     orderBy: { createdAt: "desc" },
@@ -22,13 +24,40 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const metadata = await resolveBookMetadata(title, author, workKey);
-  const wiki = await resolveWikipediaEnrichment(title, author);
+  const normalizedTitle = title.trim();
+  const normalizedAuthor = author.trim();
+
+  const existing = await prisma.book.findFirst({
+    where: {
+      title: { equals: normalizedTitle, mode: "insensitive" },
+      author: { equals: normalizedAuthor, mode: "insensitive" },
+    },
+  });
+
+  if (existing) {
+    return NextResponse.json(
+      {
+        error: `"${normalizedTitle}" by ${normalizedAuthor} is already in your library.`,
+      },
+      { status: 409 }
+    );
+  }
+
+  const metadata = await resolveBookMetadata(
+    normalizedTitle,
+    normalizedAuthor,
+    workKey
+  );
+
+  const wiki = await resolveWikipediaEnrichment(
+    normalizedTitle,
+    normalizedAuthor
+  );
 
   const book = await prisma.book.create({
     data: {
-      title,
-      author,
+      title: normalizedTitle,
+      author: normalizedAuthor,
       description: description || metadata.description,
       subjects: metadata.subjects,
       coverUrl: metadata.coverUrl,
