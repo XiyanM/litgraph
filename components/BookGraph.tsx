@@ -34,6 +34,7 @@ export function BookGraph() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
     const [data, setData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
+    const [loading, setLoading] = useState(true);
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
     const [neighborIds, setNeighborIds] = useState<Set<string>>(new Set());
     const [panel, setPanel] = useState<ConceptPanelData | null>(null);
@@ -71,6 +72,7 @@ export function BookGraph() {
                 }
             }
             setData({ nodes: Array.from(nodeMap.values()), links });
+            setLoading(false);
         }
         load();
     }, []);
@@ -111,6 +113,16 @@ export function BookGraph() {
 
     return (
         <div ref={containerRef} style={{ position: "relative", width: "100%", height: "100%" }}>
+            {!loading && data.nodes.length === 0 && (
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", pointerEvents: "none" }}>
+                    <p style={{ fontFamily: "var(--font-serif)", fontSize: 20, color: "var(--color-text)", margin: 0 }}>
+                        Nothing here yet.
+                    </p>
+                    <p style={{ fontSize: 14, color: "var(--color-text-muted)", marginTop: 6, maxWidth: 320 }}>
+                        Add a few books and the connections between them will start to take shape.
+                    </p>
+                </div>
+            )}
             <ForceGraph2D
                 ref={fgRef}
                 width={dimensions.width}
