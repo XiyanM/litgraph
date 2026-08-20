@@ -20,9 +20,10 @@ model Book {
 }
 
 model Concept {
-  id    String        @id @default(cuid())
-  label String        @unique
-  books BookConcept[]
+  id        String        @id @default(cuid())
+  label     String        @unique
+  embedding Float[]       @default([])
+  books     BookConcept[]
 }
 
 model BookConcept {
