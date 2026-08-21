@@ -14,7 +14,23 @@ export default function BookDetailPage() {
 
     useEffect(() => { fetch("/api/books").then((res) => res.json()).then(setBooks); }, []);
 
-    if (!books) return null;
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+    async function handleDelete() {
+        await fetch(`/api/books/${id}`, { method: "DELETE" });
+        router.push("/");
+    }
+
+    if (!books) {
+        return (
+            <main style={{ maxWidth: 640, margin: "0 auto", padding: "48px 24px" }}>
+                <p style={{ color: "var(--color-text-muted)", fontSize: 14, textAlign: "center", marginTop: 80 }}>
+                    Loading...
+                </p>
+            </main>
+        );
+    }
+
     const book = books.find((b) => b.id === id);
     if (!book) {
         return <main style={{ maxWidth: 640, margin: "0 auto", padding: "48px 24px" }}><p style={{ color: "var(--color-text-muted)" }}>Book not found.</p></main>;
@@ -56,6 +72,45 @@ export default function BookDetailPage() {
                     {connectedBooks.map((b) => (
                         <div key={b.id} onClick={() => router.push(`/books/${b.id}`)} style={{ fontSize: 14, marginBottom: 8, cursor: "pointer" }}>{b.title}</div>
                     ))}
+                </div>
+            )}
+
+            <div style={{ marginTop: 32, borderTop: "1px solid var(--color-border)", paddingTop: 24 }}>
+                <button
+                    onClick={() => setConfirmingDelete(true)}
+                    style={{ fontSize: 13, color: "var(--color-text-muted)", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}
+                >
+                    Remove from library
+                </button>
+            </div>
+
+            {confirmingDelete && (
+                <div
+                    onClick={() => setConfirmingDelete(false)}
+                    style={{ position: "fixed", inset: 0, background: "rgba(24,24,24,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ width: 340, background: "var(--color-surface)", borderRadius: 10, border: "1px solid var(--color-border)", boxShadow: "0 20px 60px rgba(0,0,0,0.12)", padding: 24 }}
+                    >
+                        <p style={{ fontFamily: "var(--font-serif)", fontSize: 16, margin: 0, lineHeight: 1.5 }}>
+                            Remove "{book.title}" from your library?
+                        </p>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 20 }}>
+                            <button
+                                onClick={() => setConfirmingDelete(false)}
+                                style={{ fontSize: 13, color: "var(--color-text-muted)", background: "none", border: "none", cursor: "pointer", padding: "6px 4px" }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                style={{ fontSize: 13, color: "#b3261e", background: "none", border: "none", cursor: "pointer", padding: "6px 4px", fontWeight: 500 }}
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </main>
