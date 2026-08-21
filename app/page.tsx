@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { CsvImportPanel } from "@/components/CsvImportPanel";
-
-interface Concept { id: string; label: string; }
-interface BookConcept { concept: Concept; }
-interface Book {
-  id: string; title: string; author: string; coverUrl: string | null; concepts: BookConcept[];
-}
+import { useBooks } from "@/lib/useBooks";
 
 export default function LibraryPage() {
-  const [books, setBooks] = useState<Book[] | null>(null);
+  const { books, refetch } = useBooks();
   const [showImport, setShowImport] = useState(false);
-
-  const fetchBooks = () => fetch("/api/books").then((res) => res.json()).then(setBooks);
-  useEffect(() => { fetchBooks(); }, []);
 
   if (!books) {
     return (
@@ -70,7 +62,7 @@ export default function LibraryPage() {
         </button>
         {showImport && (
           <div style={{ marginTop: 16, maxWidth: 420, marginLeft: "auto", marginRight: "auto" }}>
-            <CsvImportPanel onImported={fetchBooks} />
+            <CsvImportPanel onImported={refetch} />
           </div>
         )}
       </div>

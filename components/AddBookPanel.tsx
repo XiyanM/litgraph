@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { refetchBooks } from "@/lib/useBooks";
 
 interface Suggestion {
     title: string;
@@ -36,14 +37,15 @@ export function AddBookPanel({ open, onClose }: { open: boolean; onClose: () => 
     }, [query, adding]);
 
     async function handleAdd(s: Suggestion) {
-        if (adding) return;
         setAdding(true);
-        await fetch("/api/books", {
+        const res = await fetch("/api/books", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title: s.title, author: s.author, workKey: s.workKey }),
         });
-        window.location.reload();
+        if (res.ok) await refetchBooks();
+        setAdding(false);
+        onClose();
     }
 
     if (!open) return null;

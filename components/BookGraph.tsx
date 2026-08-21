@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useBooks } from "@/lib/useBooks";
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), { ssr: false });
 
@@ -33,6 +34,7 @@ export function BookGraph() {
     const fgRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+    const { books } = useBooks();
     const [data, setData] = useState<{ nodes: GraphNode[]; links: GraphLink[] }>({ nodes: [], links: [] });
     const [loading, setLoading] = useState(true);
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
@@ -51,9 +53,8 @@ export function BookGraph() {
     }, []);
 
     useEffect(() => {
-        async function load() {
-            const res = await fetch("/api/books");
-            const books = await res.json();
+        if (!books) return;
+        try {
             const nodeMap = new Map<string, GraphNode>();
             const links: GraphLink[] = [];
 
@@ -72,10 +73,12 @@ export function BookGraph() {
                 }
             }
             setData({ nodes: Array.from(nodeMap.values()), links });
+        } catch (err) {
+            console.error("Graph load failed:", err);
+        } finally {
             setLoading(false);
         }
-        load();
-    }, []);
+    }, [books]);
 
     const handleNodeHover = useCallback((node: any) => {
         if (!node) {

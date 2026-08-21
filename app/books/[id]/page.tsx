@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-interface Concept { id: string; label: string; }
-interface BookConcept { prominence: number; rationale: string; concept: Concept; }
-interface Book { id: string; title: string; author: string; coverUrl: string | null; concepts: BookConcept[]; }
+import { useBooks } from "@/lib/useBooks";
 
 export default function BookDetailPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
-    const [books, setBooks] = useState<Book[] | null>(null);
-
-    useEffect(() => { fetch("/api/books").then((res) => res.json()).then(setBooks); }, []);
+    const { books } = useBooks();
 
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
