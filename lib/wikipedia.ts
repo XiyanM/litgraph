@@ -121,11 +121,13 @@ export async function resolveWikipediaEnrichment(
       return null;
     }
 
-    const sections = await getSections(pageTitle);
+    const [sections, fullWikitext] = await Promise.all([
+      getSections(pageTitle),
+      fetchFullWikitext(pageTitle),
+    ]);
     const matched = findThemeOrPlotSection(sections);
     if (!matched) return null;
 
-    const fullWikitext = await fetchFullWikitext(pageTitle);
     const endOffset = findSectionEndOffset(sections, matched);
     const raw =
       endOffset !== null
