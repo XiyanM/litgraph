@@ -17,7 +17,15 @@ export default function LibraryPage() {
   const fetchBooks = () => fetch("/api/books").then((res) => res.json()).then(setBooks);
   useEffect(() => { fetchBooks(); }, []);
 
-  if (!books) return null;
+  if (!books) {
+    return (
+      <main style={{ maxWidth: 960, margin: "0 auto", padding: "48px 24px" }}>
+        <p style={{ color: "var(--color-text-muted)", fontSize: 14, textAlign: "center", marginTop: 80 }}>
+          Loading your library...
+        </p>
+      </main>
+    );
+  }
 
   const uniqueThemes = new Set(books.flatMap((b) => b.concepts.map((c) => c.concept.id)));
 
