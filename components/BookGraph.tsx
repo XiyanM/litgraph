@@ -167,15 +167,16 @@ export function BookGraph() {
                 onClick={() => fgRef.current?.zoomToFit(400, 80)}
                 style={{
                     position: "absolute",
-                    bottom: 24,
-                    left: 24,
-                    fontSize: 13,
-                    padding: "6px 14px",
-                    borderRadius: 6,
+                    top: 16,
+                    left: 16,
+                    fontSize: 14,
+                    padding: "10px 16px",
+                    borderRadius: 8,
                     border: "1px solid var(--color-border)",
                     background: "var(--color-surface)",
-                    color: "var(--color-text-muted)",
+                    color: "var(--color-text)",
                     cursor: "pointer",
+                    minHeight: 44,
                 }}
             >
                 Fit to view
