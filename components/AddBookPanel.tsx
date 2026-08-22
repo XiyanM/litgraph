@@ -29,11 +29,23 @@ export function AddBookPanel({ open, onClose }: { open: boolean; onClose: () => 
             setSuggestions([]);
             return;
         }
+        const controller = new AbortController();
         const timeout = setTimeout(async () => {
-            const res = await fetch(`/api/search-books?q=${encodeURIComponent(query)}`);
-            setSuggestions(await res.json());
+            try {
+                const res = await fetch(`/api/search-books?q=${encodeURIComponent(query)}`, {
+                    signal: controller.signal,
+                });
+                setSuggestions(await res.json());
+            } catch (err: any) {
+                if (err.name !== "AbortError") {
+                    console.error("Search failed:", err);
+                }
+            }
         }, 300);
-        return () => clearTimeout(timeout);
+        return () => {
+            clearTimeout(timeout);
+            controller.abort();
+        };
     }, [query, adding]);
 
     async function handleAdd(s: Suggestion) {
