@@ -9,7 +9,14 @@ export async function GET(req: NextRequest) {
       q
     )}%22&langRestrict=en&maxResults=5&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
     const res = await fetch(url);
-    if (!res.ok) return NextResponse.json([]);
+    if (!res.ok) {
+      console.error(
+        "Google Books search failed:",
+        res.status,
+        await res.text()
+      );
+      return NextResponse.json([]);
+    }
 
     const data = await res.json();
     const seen = new Set<string>();
