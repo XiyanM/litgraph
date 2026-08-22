@@ -37,13 +37,15 @@ export async function resolveBookMetadata(
       if (res.ok) {
         const data = await res.json();
         const items = data.items ?? [];
-        // CSV import has no human eyeballing results like the typeahead
-        // does — approximate that judgment by preferring the first result
-        // that actually has a cover, instead of blindly taking result #1.
-        item =
-          items.find((i: any) => i.volumeInfo?.imageLinks?.thumbnail) ??
-          items[0] ??
-          null;
+        const withCover = items.filter(
+          (i: any) => i.volumeInfo?.imageLinks?.thumbnail
+        );
+        console.log(
+          `Metadata search for "${title}": ${items.length} results, ${withCover.length} with covers`
+        );
+        item = withCover[0] ?? items[0] ?? null;
+      } else {
+        console.error("Metadata search failed:", res.status, await res.text());
       }
     }
 

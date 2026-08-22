@@ -5,9 +5,9 @@ export async function GET(req: NextRequest) {
   if (!q || q.trim().length < 2) return NextResponse.json([]);
 
   try {
-    const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(
+    const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:%22${encodeURIComponent(
       q
-    )}&langRestrict=en&maxResults=5&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
+    )}%22&langRestrict=en&maxResults=5&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
     const res = await fetch(url);
     if (!res.ok) return NextResponse.json([]);
 
