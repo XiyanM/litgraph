@@ -84,13 +84,18 @@ export async function POST(req: NextRequest) {
   if (extracted) {
     for (const c of extracted) {
       const concept = await resolveConcept(c.label);
-      await prisma.bookConcept.create({
-        data: {
+      // Two different extracted labels can legitimately normalize to the
+      // same concept for one book — upsert so the second one is a silent
+      // no-op instead of crashing the whole request.
+      await prisma.bookConcept.upsert({
+        where: { bookId_conceptId: { bookId: book.id, conceptId: concept.id } },
+        create: {
           bookId: book.id,
           conceptId: concept.id,
           prominence: c.prominence,
           rationale: c.rationale,
         },
+        update: {},
       });
     }
   }
