@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithRetry } from "@/lib/googleBooksFetch";
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q");
@@ -8,7 +9,8 @@ export async function GET(req: NextRequest) {
     const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:%22${encodeURIComponent(
       q
     )}%22&langRestrict=en&maxResults=5&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
-    const res = await fetch(url);
+    const res = await fetchWithRetry(url);
+
     if (!res.ok) {
       console.error(
         "Google Books search failed:",

@@ -1,3 +1,5 @@
+import { fetchWithRetry } from "@/lib/googleBooksFetch";
+
 // lib/metadata.ts
 type BookMetadata = {
   description: string | null;
@@ -21,7 +23,7 @@ export async function resolveBookMetadata(
 
     if (workKey) {
       // Exact volume the user picked — fetch it directly, no guessing involved.
-      const res = await fetch(
+      const res = await fetchWithRetry(
         `https://www.googleapis.com/books/v1/volumes/${workKey}?key=${process.env.GOOGLE_BOOKS_API_KEY}`
       );
       if (res.ok) item = await res.json();
@@ -33,7 +35,7 @@ export async function resolveBookMetadata(
       )}+inauthor:${encodeURIComponent(
         author
       )}&langRestrict=en&maxResults=5&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
-      const res = await fetch(url);
+      const res = await fetchWithRetry(url);
       if (res.ok) {
         const data = await res.json();
         const items = data.items ?? [];
