@@ -49,7 +49,8 @@ export async function resolveBookMetadata(
       subjects: info.categories ?? [],
       coverUrl: thumb ? thumb.replace("http://", "https://") : null, // Google serves http by default
     };
-  } catch {
+  } catch (err) {
+    console.error("Metadata resolution failed:", err);
     return empty;
   }
 }
