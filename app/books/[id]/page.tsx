@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useBooks } from "@/lib/useBooks";
+import { useBooks, refetchBooks } from "@/lib/useBooks";
 
 export default function BookDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -13,6 +13,7 @@ export default function BookDetailPage() {
 
     async function handleDelete() {
         await fetch(`/api/books/${id}`, { method: "DELETE" });
+        await refetchBooks();
         router.push("/");
     }
 

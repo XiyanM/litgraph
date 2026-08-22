@@ -38,7 +38,12 @@ export function useBooks() {
   useEffect(() => {
     const listener = (b: Book[]) => setBooks(b);
     listeners.add(listener);
-    refetchBooks();
+    // Only fetch if nothing has ever loaded this session — if the cache
+    // is already populated, trust it instead of silently re-fetching (and
+    // re-triggering every listener) on every single mount.
+    if (cache === null) {
+      refetchBooks();
+    }
     return () => {
       listeners.delete(listener);
     };
