@@ -27,15 +27,23 @@ export async function resolveBookMetadata(
       if (res.ok) item = await res.json();
     } else {
       // Fallback for manual submits with no typeahead pick — best-effort search.
+      // Fallback for manual submits with no typeahead pick — best-effort search.
       const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(
         title
       )}+inauthor:${encodeURIComponent(
         author
-      )}&langRestrict=en&maxResults=1&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
+      )}&langRestrict=en&maxResults=5&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        item = data.items?.[0] ?? null;
+        const items = data.items ?? [];
+        // CSV import has no human eyeballing results like the typeahead
+        // does — approximate that judgment by preferring the first result
+        // that actually has a cover, instead of blindly taking result #1.
+        item =
+          items.find((i: any) => i.volumeInfo?.imageLinks?.thumbnail) ??
+          items[0] ??
+          null;
       }
     }
 
