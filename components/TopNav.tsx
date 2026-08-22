@@ -29,7 +29,11 @@ export function TopNav({ onAddBook }: { onAddBook: () => void }) {
             }}
         >
             <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em" }}>litgraph</span>
+                <img
+                    src="/logosite.png"
+                    alt="litgraph"
+                    style={{ height: 26, width: "auto", display: "block" }}
+                />
                 <div style={{ display: "flex", gap: 20 }}>
                     <Link href="/" style={linkStyle(pathname === "/")}>Library</Link>
                     <Link href="/graph" style={linkStyle(pathname === "/graph")}>Graph</Link>
